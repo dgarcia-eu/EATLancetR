@@ -16,7 +16,9 @@
     load("data/eatlancet_tweets.rda")
     load("data/eatlancet_botscores.rda")
     load("data/eatlancet_URLshares.rda")
-    tweetids <- read.csv(gzfile("data/tweetids.csv.gz"), header=F, colClasses = rep("character",2))
+    tweetids1 <- read.csv(gzfile("data/tweetids1.csv.gz"), header=F, colClasses = rep("character",2))
+    tweetids2 <- read.csv(gzfile("data/tweetids2.csv.gz"), header=F, colClasses = rep("character",2))
+    tweetids <- rbind(tweetids1, tweetids2)
 
     datasetsummary <- data.frame(
       quantity=c("tweets mentioning EAT-Lancet or yes2meat",

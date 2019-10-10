@@ -1,0 +1,255 @@
+---
+title: "#EAT-Lancet vs. #yes2meat: Understanding the digital backlash to the 'planetary health diet' - Time series"
+output: md_document
+always_allow_html: yes
+---
+
+
+```{r setup, echo=TRUE, eval=TRUE, message=F, results='hide', cache=F}
+Sys.setlocale("LC_ALL", 'en_US.UTF-8')
+library(dplyr)
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+library(zoo)
+
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r loadData, echo=TRUE, eval=TRUE, message=F, results='hide', cache=T}
+load("data/eatlancet_tweets.rda")
+load("data/eatlancet_botscores.rda")
+load("data/eatlancet_URLshares.rda")
+tweetids1 <- read.csv(gzfile("data/tweetids1.csv.gz"), header=F, colClasses = rep("character",2))
+tweetids2 <- read.csv(gzfile("data/tweetids2.csv.gz"), header=F, colClasses = rep("character",2))
+tweetids <- rbind(tweetids1, tweetids2)
+```
+
+```{r totalnums, echo=TRUE, eval=TRUE, cache=T, results='asis'}
+datasetsummary <- data.frame(
+  quantity=c("tweets mentioning EAT-Lancet or yes2meat",
+             "total users",
+             "eat-lancet tweets",
+             "yes2meat tweets",
+             "mentioning both",
+             "users with both score",
+             "unique links shared",
+             "tweets with resolved links",
+             "tweets in user timelines",
+             "users with timeline",
+             "users with following list"),
+  number=c(nrow(eatlancet_tweets),
+           length(unique(eatlancet_tweets$USER_id_str)),
+           sum(eatlancet_tweets$EATLancet),
+           sum(eatlancet_tweets$yes2meat),
+           sum(eatlancet_tweets$yes2meat & eatlancet_tweets$EATLancet),
+           sum(!is.na(eatlancet_botscores$universalScore)),
+           length(unique(eatlancet_URLshares$decodedurl)),
+           nrow(eatlancet_URLshares),
+           nrow(tweetids),
+           length(unique(tweetids$V1)),
+           4939506)) #raw follower link data cannot be publicly shared
+
+kable(datasetsummary, caption="Dataset summary.") %>%
+  kable_styling(full_width = F)
+
+```
+
+
+```{r plotSel, echo=TRUE, eval=TRUE, fig.width=5, fig.height=1.5}
+eatlancet_tweets %>% filter(EATLancet) %>% distinct(id_str, .keep_all = T) %>% select(id=id_str, userid=USER_id_str, ts=created_at) -> EatTweetsdf 
+eatlancet_tweets %>% filter(yes2meat) %>% distinct(id_str, .keep_all = T) %>% select(id=id_str, userid=USER_id_str, ts=created_at) -> YesTweetsdf
+
+bins <- cut(EatTweetsdf$ts, breaks = seq(from=as.POSIXct('2019-01-10 00:00'), by = '1 hour', to=as.POSIXct('2019-01-28 00:00'))) 
+cnts <- table(bins)
+sums <- rollsum(x=cnts, k=24, align = "right")
+
+sdf <- as.data.frame(sums)
+sdf$date <- as.POSIXct(row.names(sdf))
+sdf$nTweets <- sdf$sums
+sdf$term <- "EAT-Lancet"
+sdf$sums <- NULL
+
+bins2 <- cut(YesTweetsdf$ts, breaks = seq(from=as.POSIXct('2019-01-10 00:00'), by = '1 hour', to=as.POSIXct('2019-01-28 00:00'))) 
+cnts2 <- table(bins2)
+sums2 <- rollsum(x=cnts2, k=24, align = "right")
+sdf2 <- as.data.frame(sums2)
+sdf2$date <- as.POSIXct(row.names(sdf2))
+sdf2$nTweets <- sdf2$sums
+sdf2$term <- "Yes2Meat"
+sdf2$sums2 <- NULL
+
+df <- rbind(sdf, sdf2)
+
+plt <- ggplot(data=df, aes(x=as.POSIXct(date), y=nTweets, color=term)) + geom_vline(xintercept = as.POSIXct("2019-01-16 23:55:00"), color="lightgray", lty=1, size=1) + theme_bw() + geom_line(size=0.5) + xlab("Date") + ylab("Number of Tweets") + theme_bw() + theme(legend.position = c(0.15,0.6), legend.title = element_text(size = 0), legend.text = element_text(size = 8), axis.title=element_text(size=10)) + scale_color_manual(values=c("blue","red")) + scale_x_datetime(breaks = as.POSIXct(c("2019-01-11 12:00:00", "2019-01-14 12:00:00", "2019-01-17 12:00:00", "2019-01-20 12:00:00", "2019-01-23 12:00:00", "2019-01-27 12:00:00")), labels = c("Jan 11", "Jan 14", "Jan 17", "Jan 20", "Jan 23", "Jan 27"))
+plt
+```
+
+
+
+```{r plotFull, echo=TRUE, eval=TRUE, fig.width=5, fig.height=1.5}
+eatlancet_tweets %>% filter(EATLancet) %>% distinct(id_str, .keep_all = T) %>% select(id=id_str, userid=USER_id_str, ts=created_at) -> EatTweetsdf 
+eatlancet_tweets %>% filter(yes2meat) %>% distinct(id_str, .keep_all = T) %>% select(id=id_str, userid=USER_id_str, ts=created_at) -> YesTweetsdf 
+
+bins <- cut(EatTweetsdf$ts, breaks = seq(from=as.POSIXct('2018-12-01 23:00'), by = '1 hour', to=as.POSIXct('2019-04-01 02:00'))) 
+cnts <- table(bins)
+sums <- rollsum(x=cnts, k=24, align = "right")
+
+sdf <- as.data.frame(sums)
+sdf$date <- as.POSIXct(row.names(sdf))
+sdf$nTweets <- sdf$sums
+sdf$term <- "EAT-Lancet"
+sdf$sums <- NULL
+
+bins2 <- cut(YesTweetsdf$ts, breaks = seq(from=as.POSIXct('2018-12-01 23:00'), by = '1 hour', to=as.POSIXct('2019-04-01 02:00'))) 
+cnts2 <- table(bins2)
+sums2 <- rollsum(x=cnts2, k=24, align = "right")
+sdf2 <- as.data.frame(sums2)
+sdf2$date <- as.POSIXct(row.names(sdf2))
+sdf2$nTweets <- sdf2$sums
+sdf2$term <- "Yes2Meat"
+sdf2$sums2 <- NULL
+    
+df <- rbind(sdf, sdf2)
+
+plt <- ggplot(data=df, aes(x=as.POSIXct(date), y=nTweets, color=term)) + geom_vline(xintercept = as.POSIXct("2019-01-16 23:55:00"), color="lightgray", lty=1, size=1) + theme_bw() + geom_line(size=0.5) + xlab("Date") + ylab("Number of Tweets") + theme_bw() + theme(legend.position = c(0.75,0.6), legend.title = element_text(size = 0), legend.text = element_text(size = 8), axis.title=element_text(size=10)) + scale_color_manual(values=c("blue","red")) 
+plt
+```
+
+
+```{r plotCumulative, echo=TRUE, eval=TRUE, fig.width=5, fig.height=1.5}
+eatlancet_tweets %>% filter(EATLancet) %>% distinct(id_str, .keep_all = T) %>% select(id=id_str, userid=USER_id_str,  ts=created_at) -> EatTweetsdf 
+eatlancet_tweets %>% filter(yes2meat) %>% distinct(id_str, .keep_all = T) %>% select(id=id_str, userid=USER_id_str,  ts=created_at) -> YesTweetsdf 
+
+bins <- cut(EatTweetsdf$ts, breaks = seq(from=as.POSIXct('2018-12-01 23:00'), by = '1 hour', to=as.POSIXct('2019-04-01 02:00'))) 
+cnts <- table(bins)
+sums <- cumsum(x=cnts)
+
+sdf <- as.data.frame(sums)
+sdf$date <- as.POSIXct(row.names(sdf))
+sdf$nTweets <- sdf$sums
+sdf$term <- "EAT-Lancet"
+sdf$sums <- NULL
+
+bins2 <- cut(YesTweetsdf$ts, breaks = seq(from=as.POSIXct('2018-12-01 23:00'), by = '1 hour', to=as.POSIXct('2019-04-01 02:00'))) 
+cnts2 <- table(bins2)
+sums2 <- cumsum(x=cnts2)
+sdf2 <- as.data.frame(sums2)
+sdf2$date <- as.POSIXct(row.names(sdf2))
+sdf2$nTweets <- sdf2$sums
+sdf2$term <- "Yes2Meat"
+sdf2$sums2 <- NULL
+    
+df <- rbind(sdf, sdf2)
+
+plt <- ggplot(data=df, aes(x=as.POSIXct(date), y=nTweets, color=term)) + geom_vline(xintercept = as.POSIXct("2019-01-16 23:55:00"), color="lightgray", lty=1, size=1) + theme_bw() + geom_line(size=0.5) + xlab("Date") + ylab("Number of Tweets") + theme_bw() + theme(legend.position = c(0.15,0.6), legend.title = element_text(size = 0), legend.text = element_text(size = 8), axis.title=element_text(size=10)) + scale_color_manual(values=c("blue","red")) 
+plt
+```
+  
+
+```{r plotURLts, echo=TRUE, eval=TRUE, fig.width=5, fig.height=2, cache=T, message=F, warning=F}
+eatlancet_URLshares %>% filter (created_at>="2019-01-11" & created_at <="2019-01-27") %>% distinct(decodedurl, .keep_all = TRUE) -> df
+
+print(paste("tweet percent covered by annotated URLS:", round(100*sum(df$nAll[!is.na(df$class)])/sum(df$nAll), digits = 2)))
+
+eatlancet_URLshares %>% filter(class=="Anti") %>% select(ts=created_at, retweet_count) -> AntiTweetsdf 
+eatlancet_URLshares %>% filter(class=="Pro" | class=="Neutral") %>% select(ts=created_at, retweet_count) -> ProTweetsdf 
+
+ProTweetsdf$day <- as.Date(ProTweetsdf$ts)
+AntiTweetsdf$day <- as.Date(AntiTweetsdf$ts)
+
+ProTweetsdf %>% group_by(day) %>% summarize(n=n(), rt=sum(retweet_count)) -> Prots
+Prots$nShares <- Prots$n+Prots$rt
+
+AntiTweetsdf %>% group_by(day) %>% summarize(n=n(), rt=sum(retweet_count)) -> Antits
+Antits$nShares <- Antits$n+Antits$rt
+
+allDays <- seq(as.Date("2019-01-11"), as.Date("2019-01-27"), by="1 day")
+Prots <- left_join(data.frame(day=allDays), Prots)
+Prots$nShares[is.na(Prots$nShares)] <- 0
+Prots$n[is.na(Prots$n)] <- 0
+Antits <- left_join(data.frame(day=allDays), Antits)
+Antits$nShares[is.na(Antits$nShares)] <- 0
+Antits$n[is.na(Antits$n)] <- 0
+Antits$term <- "Against EAT-Lancet"
+Prots$term <- "In favor or neutral"
+
+plotdf <- rbind(Prots, Antits)
+plotdf$day <- as.POSIXct(plotdf$day)
+
+plt <- ggplot(data=plotdf, aes(x=as.POSIXct(day), y=n, color=term)) + geom_vline(xintercept = as.POSIXct("2019-01-16 12:00:00"), color="lightgray", lty=1, size=1) + theme_bw() + geom_line(size=0.5)+ geom_point(size=1.5) + xlab("Date") + ylab("Number of shares (log)") + theme_bw() + theme(legend.position = c(0.835,0.77), legend.title = element_text(size = 0), legend.text = element_text(size = 8)) + scale_color_manual(values=c("red", "blue"))+ scale_y_log10() + scale_x_datetime(breaks = as.POSIXct(c("2019-01-11", "2019-01-14", "2019-01-17", "2019-01-20", "2019-01-23", "2019-01-27")))
+
+plt
+```
+
+
+```{r URLfractions, echo=TRUE, eval=TRUE, fig.width=5, fig.height=1.5, cache=T, results='asis'}
+tabledf <- data.frame(term=NULL, pro=NULL, anti=NULL)
+
+eatlancet_URLshares %>% filter(yes2meat) %>%
+  filter(!is.na(class)) %>%  group_by(class) %>% 
+    summarize(n=n()) -> meatcnts
+
+tabledf <- data.frame(term="yes2meat", pro=round(100*meatcnts$n[meatcnts$class=="Pro"]/sum(meatcnts$n),2), anti=round(100*meatcnts$n[meatcnts$class=="Anti"]/sum(meatcnts$n),2))
+
+eatlancet_URLshares %>% filter(EATLancet) %>%
+ filter(!is.na(class)) %>%  group_by(class) %>% 
+    summarize(n=n()) -> eatcnts
+
+tabledf <- rbind(tabledf, data.frame(term="EAT-Lancet", pro=round(100*eatcnts$n[eatcnts$class=="Pro"]/sum(eatcnts$n),2), anti=round(100*eatcnts$n[eatcnts$class=="Anti"]/sum(eatcnts$n),2)))
+
+kable(tabledf, caption="Percentage of links to anti and pro sites per term.") %>%
+  kable_styling(full_width = F)
+
+```
+
+
+```{r VAR, echo=TRUE, eval=TRUE, fig.width=8, fig.height=2, cache=T, message=F}
+library(vars)
+library(tseries)
+
+EATbins <- cut(EatTweetsdf$ts, breaks = seq(from=as.POSIXct("2019-01-17 00:00:00"), by = '1 hour', to=as.POSIXct('2019-01-27 00:00'))) 
+EATcnts <- table(EATbins)
+EATdf <- as.data.frame(EATcnts)
+
+YESbins <- cut(YesTweetsdf$ts, breaks = seq(from=as.POSIXct("2019-01-17 00:00:00"), by = '1 hour', to=as.POSIXct('2019-01-27 00:00'))) 
+YEScnts <- table(YESbins)
+YESdf <- as.data.frame(YEScnts)
+
+tsdf <- inner_join(EATdf, YESdf, by=c("EATbins"="YESbins")) 
+names(tsdf) <- c("time", "EATLANCET", "YES2MEAT")
+tsdf %>% dplyr::select(EATLANCET, YES2MEAT) -> seldf
+
+VARselect(seldf, season = 24)$selection
+```
+
+
+```{r VARIRF, echo=TRUE, eval=TRUE, fig.width=12, fig.height=6, cache=T}
+varmodel <- VAR(seldf, p=9, season = 24)
+coeftest(varmodel, vcov=vcovHC(varmodel))
+irfres <- irf(varmodel, cumulative=F, runs=10000)
+plot(irfres)
+```
+
+  
+```{r VARlog, echo=TRUE, eval=TRUE, fig.width=8, fig.height=2, cache=T}
+seldf$EATLANCET <- log(seldf$EATLANCET+1)
+seldf$YES2MEAT <- log(seldf$YES2MEAT+1)
+
+VARselect(seldf, season = 24)$selection
+
+varmodel <- VAR(seldf, p=9, season=24)
+coeftest(varmodel, vcov=vcovHC(varmodel))
+
+jarque.bera.test(varmodel$varresult$YES2MEAT$residuals)
+adf.test(varmodel$varresult$YES2MEAT$residuals, k=1)
+```
+
+
+
