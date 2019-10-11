@@ -25,22 +25,30 @@ knitr::opts_chunk$set(
 
 ```{r loadData, echo=TRUE, eval=TRUE, message=F, results='hide', cache=T}
 load("data/biofreqs.rda")
+```
 
+```{r WC1, echo=TRUE, eval=TRUE, message=F, cache=T, fig.width=6, fig.height=6}
 wordcloud(words=biofreqs$words[biofreqs$community=="blue"], freq = biofreqs$freq[biofreqs$community=="blue"], min.freq = 1,
           max.words=200, random.order=FALSE, rot.per=0.35, 
           colors="blue")
+```
 
+
+```{r WC2, echo=TRUE, eval=TRUE, message=F, cache=T, fig.width=6, fig.height=6}
 wordcloud(words=biofreqs$words[biofreqs$community=="red"], freq = biofreqs$freq[biofreqs$community=="red"], min.freq = 1,
           max.words=200, random.order=FALSE, rot.per=0.35, 
           colors="red")
+```
 
+```{r WC3, echo=TRUE, eval=TRUE, message=F, cache=T, fig.width=6, fig.height=6}
 wordcloud(words=biofreqs$words[biofreqs$community=="yellow"], freq = biofreqs$freq[biofreqs$community=="yellow"], min.freq = 1,
           max.words=200, random.order=FALSE, rot.per=0.35, 
           colors="darkorange")
+```
 
+```{r WC4, echo=TRUE, eval=TRUE, message=F, cache=T, fig.width=6, fig.height=6}
 wordcloud(words=biofreqs$words[biofreqs$community=="green"], freq = biofreqs$freq[biofreqs$community=="green"], min.freq = 1,
           max.words=200, random.order=FALSE, rot.per=0.35, 
           colors="darkgreen")
-
 ```
 

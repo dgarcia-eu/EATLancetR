@@ -20,25 +20,22 @@
               max.words=200, random.order=FALSE, rot.per=0.35, 
               colors="blue")
 
-![](02_Network_files/figure-markdown_strict/loadData-1.png)
-
+![](02_Network_files/figure-markdown_strict/WC1-1.png)
 
     wordcloud(words=biofreqs$words[biofreqs$community=="red"], freq = biofreqs$freq[biofreqs$community=="red"], min.freq = 1,
               max.words=200, random.order=FALSE, rot.per=0.35, 
               colors="red")
 
-![](02_Network_files/figure-markdown_strict/loadData-2.png)
-
+![](02_Network_files/figure-markdown_strict/WC2-1.png)
 
     wordcloud(words=biofreqs$words[biofreqs$community=="yellow"], freq = biofreqs$freq[biofreqs$community=="yellow"], min.freq = 1,
               max.words=200, random.order=FALSE, rot.per=0.35, 
               colors="darkorange")
 
-![](02_Network_files/figure-markdown_strict/loadData-3.png)
-
+![](02_Network_files/figure-markdown_strict/WC3-1.png)
 
     wordcloud(words=biofreqs$words[biofreqs$community=="green"], freq = biofreqs$freq[biofreqs$community=="green"], min.freq = 1,
               max.words=200, random.order=FALSE, rot.per=0.35, 
               colors="darkgreen")
 
-![](02_Network_files/figure-markdown_strict/loadData-4.png)
+![](02_Network_files/figure-markdown_strict/WC4-1.png)
