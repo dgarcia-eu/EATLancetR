@@ -25,6 +25,7 @@ knitr::opts_chunk$set(
 
 ```{r loadData, echo=TRUE, eval=TRUE, message=F, results='hide', cache=T}
 load("data/biofreqs.rda")
+load("data/timelinefreqs.rda")
 ```
 
 ```{r WC1, echo=TRUE, eval=TRUE, message=F, cache=T, fig.width=6, fig.height=6}
@@ -50,5 +51,90 @@ wordcloud(words=biofreqs$words[biofreqs$community=="yellow"], freq = biofreqs$fr
 wordcloud(words=biofreqs$words[biofreqs$community=="green"], freq = biofreqs$freq[biofreqs$community=="green"], min.freq = 1,
           max.words=200, random.order=FALSE, rot.per=0.35, 
           colors="darkgreen")
+```
+
+
+```{r Top12, echo=TRUE, eval=TRUE, message=F, cache=T, results='asis'}
+d <- timelinefreqs[timelinefreqs$community=="blue",]
+vs <- paste(d$word[1:12], " (", d$freq[1:12], ")", sep="")
+tabledf <- data.frame(rank=seq(1,12), blue=vs)
+
+d <- timelinefreqs[timelinefreqs$community=="yellow",]
+tabledf$yellow <- paste(d$word[1:12], " (", d$freq[1:12], ")", sep="")
+
+d <- timelinefreqs[timelinefreqs$community=="red",]
+tabledf$red <- paste(d$word[1:12], " (", d$freq[1:12], ")", sep="")
+
+d <- timelinefreqs[timelinefreqs$community=="green",]
+tabledf$green <- paste(d$word[1:12], " (", d$freq[1:12], ")", sep="")
+
+
+kable(tabledf, caption="Most frequent words in timelines by community.", col.names = c("Rank", "Blue community", "Yellow community", "Red community", "Green community")) %>%
+  kable_styling(full_width = F)
+```
+
+
+```{r Followings, echo=TRUE, eval=TRUE, message=F, cache=T, results='asis'}
+load("data/FollowerComm.rda")
+names(FollowerComm) <- c("CommFrom", "CommTo")
+tabledf <- NULL
+
+for (comm in c("blue", "yellow", "red", "green"))
+{
+  N <- sum(FollowerComm$CommFrom==comm)
+  toblue <- sum(FollowerComm$CommFrom==comm & FollowerComm$CommTo=="blue")
+  toyellow <- sum(FollowerComm$CommFrom==comm & FollowerComm$CommTo=="yellow")
+  tored <- sum(FollowerComm$CommFrom==comm & FollowerComm$CommTo=="red")
+  togreen <- sum(FollowerComm$CommFrom==comm & FollowerComm$CommTo=="green")
+  tabledf <- rbind(tabledf, data.frame(community=comm, 
+                      toblue/N, toyellow/N, tored/N, togreen/N))
+}
+
+kable(tabledf, caption="Fractions of follower links between communities", col.names = c("From community", "to blue", "to yellow", "to red", "to green")) %>%
+  kable_styling(full_width = F)
+
+```
+
+```{r RetweetsBefore, echo=TRUE, eval=TRUE, message=F, cache=T, results='asis'}
+load("data/RT.rda")
+RT %>% filter(ts <1546300800) -> RT
+names(RT) <- c("ts", "CommFrom", "CommTo")
+tabledf <- NULL
+
+for (comm in c("blue", "yellow", "red", "green"))
+{
+  N <- sum(RT$CommFrom==comm)
+  toblue <- sum(RT$CommFrom==comm & RT$CommTo=="blue")
+  toyellow <- sum(RT$CommFrom==comm & RT$CommTo=="yellow")
+  tored <- sum(RT$CommFrom==comm & RT$CommTo=="red")
+  togreen <- sum(RT$CommFrom==comm & RT$CommTo=="green")
+  tabledf <- rbind(tabledf, data.frame(community=comm, 
+                      toblue/N, toyellow/N, tored/N, togreen/N))
+}
+
+kable(tabledf, caption="Fractions of retweets between communities by the end of 2018", col.names = c("From community", "to blue", "to yellow", "to red", "to green")) %>%
+  kable_styling(full_width = F)
+```
+
+
+```{r RetweetsAfter, echo=TRUE, eval=TRUE, message=F, cache=T, results='asis'}
+load("data/RT.rda")
+RT %>% filter(ts>=1547683200 & ts <1548547200) -> RT
+names(RT) <- c("ts", "CommFrom", "CommTo")
+tabledf <- NULL
+
+for (comm in c("blue", "yellow", "red", "green"))
+{
+  N <- sum(RT$CommFrom==comm)
+  toblue <- sum(RT$CommFrom==comm & RT$CommTo=="blue")
+  toyellow <- sum(RT$CommFrom==comm & RT$CommTo=="yellow")
+  tored <- sum(RT$CommFrom==comm & RT$CommTo=="red")
+  togreen <- sum(RT$CommFrom==comm & RT$CommTo=="green")
+  tabledf <- rbind(tabledf, data.frame(community=comm, 
+                      toblue/N, toyellow/N, tored/N, togreen/N))
+}
+
+kable(tabledf, caption="Fractions of retweets between communities during the ten days after the report release", col.names = c("From community", "to blue", "to yellow", "to red", "to green")) %>%
+  kable_styling(full_width = F)
 ```
 
