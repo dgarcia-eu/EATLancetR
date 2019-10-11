@@ -58,11 +58,11 @@ datasetsummary <- data.frame(
 
 kable(datasetsummary, caption="Dataset summary.") %>%
   kable_styling(full_width = F)
-
 ```
 
 
 ```{r plotSel, echo=TRUE, eval=TRUE, fig.width=5, fig.height=1.5}
+
 eatlancet_tweets %>% filter(EATLancet) %>% distinct(id_str, .keep_all = T) %>% select(id=id_str, userid=USER_id_str, ts=created_at) -> EatTweetsdf 
 eatlancet_tweets %>% filter(yes2meat) %>% distinct(id_str, .keep_all = T) %>% select(id=id_str, userid=USER_id_str, ts=created_at) -> YesTweetsdf
 
@@ -155,8 +155,7 @@ plt
 
 ```{r plotURLts, echo=TRUE, eval=TRUE, fig.width=5, fig.height=2, cache=T, message=F, warning=F}
 eatlancet_URLshares %>% filter (created_at>="2019-01-11" & created_at <="2019-01-27") %>% distinct(decodedurl, .keep_all = TRUE) -> df
-
-print(paste("tweet percent covered by annotated URLS:", round(100*sum(df$nAll[!is.na(df$class)])/sum(df$nAll), digits = 2)))
+print(paste("Tweet percent covered by annotated URLS:", round(100*sum(df$nAll[!is.na(df$class)])/sum(df$nAll), digits = 2)))
 
 eatlancet_URLshares %>% filter(class=="Anti") %>% select(ts=created_at, retweet_count) -> AntiTweetsdf 
 eatlancet_URLshares %>% filter(class=="Pro" | class=="Neutral") %>% select(ts=created_at, retweet_count) -> ProTweetsdf 
@@ -211,6 +210,7 @@ kable(tabledf, caption="Percentage of links to anti and pro sites per term.") %>
 
 
 ```{r VAR, echo=TRUE, eval=TRUE, fig.width=8, fig.height=2, cache=T, message=F}
+
 library(vars)
 library(tseries)
 
