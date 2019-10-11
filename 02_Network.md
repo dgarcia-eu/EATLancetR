@@ -627,3 +627,74 @@ green
 </tr>
 </tbody>
 </table>
+Bot scores:
+
+    load("data/communitydf.rda")
+    load("data/eatlancet_botscores.rda")
+    inner_join(eatlancet_botscores, communitydf, by=c("USER_id_str"="v_name")) %>%
+      select(USER_id_str, universalScore, englishScore, community) -> botcommdf
+
+    cdfGreen <- ecdf(botcommdf$universalScore[botcommdf$community=="green"])
+    cdfRed <- ecdf(botcommdf$universalScore[botcommdf$community=="red"])
+    cdfBlue <- ecdf(botcommdf$universalScore[botcommdf$community=="blue"])
+    cdfYellow <- ecdf(botcommdf$universalScore[botcommdf$community=="yellow"])
+    cdfAll <- ecdf(botcommdf$universalScore)
+
+    x <- seq(0,1, by=0.01)
+    plot(x, cdfGreen(x), col="darkgreen", type="l", lwd=2, xlab = "Universal Bot Score", ylab = "CDF")
+    lines(x, cdfRed(x), col="red", lwd=2)
+    lines(x, cdfBlue(x), col="blue", lwd=2)
+    lines(x, cdfYellow(x), col="darkorange", lwd=2)
+    lines(x, cdfAll(x), col=rgb(0,0,0,0.6),lwd=3)
+
+![](02_Network_files/figure-markdown_strict/unnamed-chunk-1-1.png)
+
+
+
+    cdfGreen <- ecdf(botcommdf$englishScore[botcommdf$community=="green"])
+    cdfRed <- ecdf(botcommdf$englishScore[botcommdf$community=="red"])
+    cdfBlue <- ecdf(botcommdf$englishScore[botcommdf$community=="blue"])
+    cdfYellow <- ecdf(botcommdf$englishScore[botcommdf$community=="yellow"])
+    cdfAll <- ecdf(botcommdf$englishScore)
+
+    x <- seq(0,1, by=0.01)
+    plot(x, cdfGreen(x), col="darkgreen", type="l", lwd=2, xlab = "English Bot Score", ylab = "CDF")
+    lines(x, cdfRed(x), col="red", lwd=2)
+    lines(x, cdfBlue(x), col="blue", lwd=2)
+    lines(x, cdfYellow(x), col="darkorange", lwd=2)
+    lines(x, cdfAll(x), col=rgb(0,0,0,0.6),lwd=3)
+
+![](02_Network_files/figure-markdown_strict/unnamed-chunk-1-2.png)
+
+    load("data/eatlancet_URLshares.rda")
+    eatlancet_URLshares$USER_id_str <- as.character(eatlancet_URLshares$USER_id_str)
+    eatlancet_URLshares %>% distinct(id_str, .keep_all = T) -> eatlancet_URLshares
+
+    eatlancet_URLshares <- inner_join(eatlancet_URLshares, eatlancet_botscores, by="USER_id_str")
+
+    cdfRed <- ecdf(eatlancet_URLshares$universalScore[eatlancet_URLshares$class=="Anti"])
+    cdfBlue <- ecdf(eatlancet_URLshares$universalScore[eatlancet_URLshares$class=="Pro"])
+    cdfGray <- ecdf(eatlancet_URLshares$universalScore[eatlancet_URLshares$class=="Neutral"])
+
+    x <- seq(0,1, by=0.01)
+    plot(x, cdfBlue(x), col="blue", type="l", lwd=2, xlab = "Universal Bot Score", ylab = "CDF")
+    lines(x, cdfRed(x), col="red", lwd=2)
+    lines(x, cdfGray(x), col=rgb(0,0,0,0.6),lwd=2)
+
+    cdfRed <- ecdf(eatlancet_URLshares$englishScore[eatlancet_URLshares$class=="Anti"])
+    cdfBlue <- ecdf(eatlancet_URLshares$englishScore[eatlancet_URLshares$class=="Pro"])
+    cdfGray <- ecdf(eatlancet_URLshares$englishScore[eatlancet_URLshares$class=="Neutral"])
+    legend("bottomright", c("Shares anti EAT-Lancet", "Shares pro EAT-Lancet", 
+                            "Shares neutral EAT-Lancet"), col=c("red", "blue", rgb(0,0,0,0.6)), lwd=2)
+
+![](02_Network_files/figure-markdown_strict/unnamed-chunk-2-1.png)
+
+
+    x <- seq(0,1, by=0.01)
+    plot(x, cdfBlue(x), col="blue", type="l", lwd=2, xlab = "English Bot Score", ylab = "CDF")
+    lines(x, cdfRed(x), col="red", lwd=2)
+    lines(x, cdfGray(x), col=rgb(0,0,0,0.6),lwd=2)
+    legend("bottomright", c("Shares anti EAT-Lancet", "Shares pro EAT-Lancet", 
+                            "Shares neutral EAT-Lancet"), col=c("red", "blue", rgb(0,0,0,0.6)), lwd=2)
+
+![](02_Network_files/figure-markdown_strict/unnamed-chunk-2-2.png)
