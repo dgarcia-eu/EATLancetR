@@ -138,6 +138,28 @@ kable(tabledf, caption="Fractions of retweets between communities during the ten
   kable_styling(full_width = F)
 ```
 
+```{r TotalRetweets, echo=TRUE, eval=TRUE, message=F, cache=T, results='asis'}
+load("data/communitydf.rda")
+load("data/eatlancet_tweets.rda")
+
+rtdf <- inner_join(eatlancet_tweets, communitydf, by=c("USER_id_str" = "v_name"))
+
+tabledf <- NULL
+
+for (comm in c("blue", "yellow", "red", "green"))
+{
+  Nusers <- sum(communitydf$community==comm)
+  nRT <- sum(rtdf$retweet_count[rtdf$community==comm])
+  mnRT <- nRT/Nusers
+  tabledf <- rbind(tabledf, data.frame(community=comm, users=Nusers, retweets=nRT, retweetsperuser=mnRT))
+}
+
+kable(tabledf, caption="Retweet statistics per community", col.names = c("Community", "Number of users", "Total retweets", "Retweets per user")) %>%
+  kable_styling(full_width = F)
+
+```
+
+
 Bot scores:
 ```{r, echo=TRUE, eval=TRUE, fig.width=5, fig.height=5}
 load("data/communitydf.rda")

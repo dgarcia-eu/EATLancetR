@@ -627,6 +627,103 @@ green
 </tr>
 </tbody>
 </table>
+    load("data/communitydf.rda")
+    load("data/eatlancet_tweets.rda")
+
+    rtdf <- inner_join(eatlancet_tweets, communitydf, by=c("USER_id_str" = "v_name"))
+
+    tabledf <- NULL
+
+    for (comm in c("blue", "yellow", "red", "green"))
+    {
+      Nusers <- sum(communitydf$community==comm)
+      nRT <- sum(rtdf$retweet_count[rtdf$community==comm])
+      mnRT <- nRT/Nusers
+      tabledf <- rbind(tabledf, data.frame(community=comm, users=Nusers, retweets=nRT, retweetsperuser=mnRT))
+    }
+
+    kable(tabledf, caption="Retweet statistics per community", col.names = c("Community", "Number of users", "Total retweets", "Retweets per user")) %>%
+      kable_styling(full_width = F)
+
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Retweet statistics per community
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Community
+</th>
+<th style="text-align:right;">
+Number of users
+</th>
+<th style="text-align:right;">
+Total retweets
+</th>
+<th style="text-align:right;">
+Retweets per user
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+blue
+</td>
+<td style="text-align:right;">
+1255
+</td>
+<td style="text-align:right;">
+12261
+</td>
+<td style="text-align:right;">
+9.769721
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yellow
+</td>
+<td style="text-align:right;">
+880
+</td>
+<td style="text-align:right;">
+9236
+</td>
+<td style="text-align:right;">
+10.495454
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+red
+</td>
+<td style="text-align:right;">
+1699
+</td>
+<td style="text-align:right;">
+28969
+</td>
+<td style="text-align:right;">
+17.050618
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+green
+</td>
+<td style="text-align:right;">
+164
+</td>
+<td style="text-align:right;">
+4260
+</td>
+<td style="text-align:right;">
+25.975610
+</td>
+</tr>
+</tbody>
+</table>
 Bot scores:
 
     load("data/communitydf.rda")
