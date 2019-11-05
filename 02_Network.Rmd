@@ -227,3 +227,28 @@ legend("bottomright", c("Shares anti EAT-Lancet", "Shares pro EAT-Lancet",
                         "Shares neutral EAT-Lancet"), col=c("red", "blue", rgb(0,0,0,0.6)), lwd=2)
 
 ```
+
+
+Potential message reach by community based on follower numbers
+
+```{r, echo=TRUE, eval=TRUE}
+load("data/community_followers.rda")
+
+community_follower_stats_filtered <- community_followers %>%
+  filter(n_tweets > 2) %>%
+  group_by(community) %>%
+  summarise(n_users = n(),
+            sum_tweets = sum(n_tweets),
+            sum_followers = sum(n_followers),
+            median_followers = median(n_followers),
+            mean_followers = mean(n_followers),
+            cumulative_tweet_reach = sum(n_followers * n_tweets))
+
+community_follower_stats_filtered %>%
+  select(community, n_users, sum_tweets, median_followers, sum_followers, cumulative_tweet_reach) %>%
+  arrange(-n_users) %>%
+  kable(format = "html", 
+        digits = c(0, 0, 0, 0, 1, 0), 
+        col.names = c("Community", "Users (N)", "Tweets (N)", "Followers (median)", "Followers (sum)", "Cumulative reach"))
+```
+
