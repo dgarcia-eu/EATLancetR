@@ -1,4 +1,8 @@
     Sys.setlocale("LC_ALL", 'en_US.UTF-8')
+
+    ## Warning in Sys.setlocale("LC_ALL", "en_US.UTF-8"): OS meldet: Anfrage
+    ## Lokalisierung auf "en_US.UTF-8" zu setzen kann nicht beachtet werden
+
     library(dplyr)
     library(knitr)
     library(kableExtra)
@@ -288,6 +292,7 @@ know (10849)
 </tr>
 </tbody>
 </table>
+
     load("data/FollowerComm.rda")
     names(FollowerComm) <- c("CommFrom", "CommTo")
     tabledf <- NULL
@@ -400,6 +405,7 @@ green
 </tr>
 </tbody>
 </table>
+
     load("data/RT.rda")
     RT %>% filter(ts <1546300800) -> RT
     names(RT) <- c("ts", "CommFrom", "CommTo")
@@ -513,6 +519,7 @@ green
 </tr>
 </tbody>
 </table>
+
     load("data/RT.rda")
     RT %>% filter(ts>=1547683200 & ts <1548547200) -> RT
     names(RT) <- c("ts", "CommFrom", "CommTo")
@@ -627,6 +634,7 @@ green
 </tr>
 </tbody>
 </table>
+
     load("data/communitydf.rda")
     load("data/eatlancet_tweets.rda")
 
@@ -724,6 +732,7 @@ green
 </tr>
 </tbody>
 </table>
+
 Bot scores:
 
     load("data/communitydf.rda")
@@ -795,3 +804,131 @@ Bot scores:
                             "Shares neutral EAT-Lancet"), col=c("red", "blue", rgb(0,0,0,0.6)), lwd=2)
 
 ![](02_Network_files/figure-markdown_strict/unnamed-chunk-2-2.png)
+
+Potential message reach by community based on follower numbers
+
+    load("data/community_followers.rda")
+
+    community_follower_stats_filtered <- community_followers %>%
+      filter(n_tweets > 2) %>%
+      group_by(community) %>%
+      summarise(n_users = n(),
+                sum_tweets = sum(n_tweets),
+                sum_followers = sum(n_followers),
+                median_followers = median(n_followers),
+                mean_followers = mean(n_followers),
+                cumulative_tweet_reach = sum(n_followers * n_tweets))
+
+    community_follower_stats_filtered %>%
+      select(community, n_users, sum_tweets, median_followers, sum_followers, cumulative_tweet_reach) %>%
+      arrange(-n_users) %>%
+      kable(format = "html", 
+            digits = c(0, 0, 0, 0, 1, 0), 
+            col.names = c("Community", "Users (N)", "Tweets (N)", "Followers (median)", "Followers (sum)", "Cumulative reach"))
+
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+Community
+</th>
+<th style="text-align:right;">
+Users (N)
+</th>
+<th style="text-align:right;">
+Tweets (N)
+</th>
+<th style="text-align:right;">
+Followers (median)
+</th>
+<th style="text-align:right;">
+Followers (sum)
+</th>
+<th style="text-align:right;">
+Cumulative reach
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+red
+</td>
+<td style="text-align:right;">
+623
+</td>
+<td style="text-align:right;">
+8034
+</td>
+<td style="text-align:right;">
+270
+</td>
+<td style="text-align:right;">
+1320089
+</td>
+<td style="text-align:right;">
+26112240
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+blue
+</td>
+<td style="text-align:right;">
+184
+</td>
+<td style="text-align:right;">
+1300
+</td>
+<td style="text-align:right;">
+2036
+</td>
+<td style="text-align:right;">
+3453100
+</td>
+<td style="text-align:right;">
+25172644
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+yellow
+</td>
+<td style="text-align:right;">
+146
+</td>
+<td style="text-align:right;">
+1744
+</td>
+<td style="text-align:right;">
+1377
+</td>
+<td style="text-align:right;">
+893636
+</td>
+<td style="text-align:right;">
+9587134
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+green
+</td>
+<td style="text-align:right;">
+40
+</td>
+<td style="text-align:right;">
+338
+</td>
+<td style="text-align:right;">
+1391
+</td>
+<td style="text-align:right;">
+146272
+</td>
+<td style="text-align:right;">
+2339882
+</td>
+</tr>
+</tbody>
+</table>
