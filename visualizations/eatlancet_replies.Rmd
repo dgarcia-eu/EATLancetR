@@ -1,0 +1,79 @@
+---
+title: "EAT-Lancet Tweet analysis - Reply activity by communities"
+output: 
+  rmarkdown::html_document:
+    theme: flatly
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(dplyr)
+library(sigmajs)
+
+load("../data/nodes_replies.rda")
+load("../data/edges_replies.rda")
+
+
+nodes_replies_annotated <- nodes_replies
+
+# adjust the visualization speed by modifying the applied delay in ms per day
+delay_step_ms_per_day <- 500
+
+edges_replies_annotated <- edges_replies %>%
+  mutate(delay = as.numeric((reply_date - min(reply_date)) * delay_step_ms_per_day),
+         progress_label = reply_date)
+
+# modify data labels and add explanatory text
+label_spacing <- "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+
+edges_replies_annotated <- edges_replies_annotated %>%
+  mutate(progress_label = ifelse(reply_date == min(reply_date), 
+                                 paste(reply_date, 
+                                       label_spacing, 
+                                       "First replies can be observed in December 2018."), 
+                                 as.character(progress_label))) %>%
+  mutate(progress_label = ifelse(reply_date > "2018-12-31" & reply_date < "2019-01-16",
+                                 paste(reply_date, 
+                                       label_spacing,
+                                       "Activity suddenly increases in the red community a few days before the launch of the EAT-Lancet report ..."),
+                                 as.character(progress_label))) %>%
+  mutate(progress_label = ifelse(reply_date > "2019-01-16" & reply_date < "2019-01-24",
+                                 paste(reply_date,
+                                       label_spacing,
+                                       "... and intensifies in all communities with the official report launch."),
+                                 as.character(progress_label))) %>%
+  mutate(progress_label = ifelse(reply_date > "2019-01-31" & reply_date < "2019-03-01",
+                                 paste(reply_date,
+                                       label_spacing,
+                                       "Activity continues with lower intensity throughout the monitored period."),
+                                 as.character(progress_label))) %>%
+  mutate(progress_label = ifelse(reply_date > "2019-03-15",
+                                 paste(reply_date,
+                                       label_spacing,
+                                       "But the overall pattern remains unchanged, with the red community posting most replies."),
+                                 as.character(progress_label)))
+```
+
+
+```{r}
+sigmajs() %>%
+  sg_nodes(nodes_replies_annotated, id, size, x, y, color) %>%
+  sg_add_edges(edges_replies_annotated, delay, id, source, target, 
+               refresh = TRUE, cumsum = FALSE) %>% 
+  sg_progress(edges_replies_annotated, delay, text = progress_label, 
+              class = "text-warning", position = "bottom", cumsum = FALSE, style = "font") %>%
+  sg_button(
+    c("add_edges", "progress"), # event
+    class = "btn btn-primary", # button class
+    tag = tags$a,
+    position = "top",
+    "Start" # label
+  )
+```
